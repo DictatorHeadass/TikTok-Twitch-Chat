@@ -133,24 +133,29 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.post('/api/config', async (req, res) => {
-    const newConfig = req.body;
+    try {
+        const newConfig = req.body;
 
-    let needsReconnect = false;
-    if (newConfig.tiktokUsername !== config.tiktokUsername || newConfig.twitchChannel !== config.twitchChannel) {
-        needsReconnect = true;
+        let needsReconnect = false;
+        if (newConfig.tiktokUsername !== config.tiktokUsername || newConfig.twitchChannel !== config.twitchChannel) {
+            needsReconnect = true;
+        }
+
+        // Update config
+        config = { ...config, ...newConfig };
+
+        // Emit full config update
+        io.emit('config_update', config);
+
+        if (needsReconnect) {
+            await connectServices();
+        }
+
+        res.json({ status: 'ok', config });
+    } catch (err) {
+        console.error('Error in POST /api/config:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
-
-    // Update config
-    config = { ...config, ...newConfig };
-
-    // Emit full config update
-    io.emit('config_update', config);
-
-    if (needsReconnect) {
-        await connectServices();
-    }
-
-    res.json({ status: 'ok', config });
 });
 
 io.on('connection', (socket) => {
