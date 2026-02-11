@@ -1,6 +1,27 @@
 const socket = io();
 const chatContainer = document.getElementById('chat-container');
 
+// Connection Status Indicator
+const statusIndicator = document.createElement('div');
+statusIndicator.id = 'status-indicator';
+document.body.appendChild(statusIndicator);
+
+socket.on('connect', () => {
+    console.log('Connected to server');
+    statusIndicator.className = 'connected';
+    setTimeout(() => { statusIndicator.className = 'hidden'; }, 2000); // Hide after 2s
+});
+
+socket.on('disconnect', () => {
+    console.log('Disconnected from server');
+    statusIndicator.className = 'disconnected';
+});
+
+socket.on('connect_error', (err) => {
+    console.error('Connection Error:', err);
+    statusIndicator.className = 'error';
+});
+
 const TIKTOK_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tiktok" viewBox="0 0 16 16"> <path d="M9 0h1.98c.144.715.54 1.617 1.235 2.512C12.895 3.389 13.797 4 15 4v2c-1.753 0-3.07-.814-4-1.829V11a5 5 0 1 1-5-5v2a3 3 0 1 0 3 3V0Z"/> </svg>`;
 const TWITCH_ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitch" viewBox="0 0 16 16"> <path d="M3.857 0 1 2.857v10.286h3.429V16l2.857-2.857H9.57L14.714 8V0H3.857zm9.714 7.429-2.285 2.285H9l-2 2v-2H4.429V1.143h9.142v6.286z"/> <path d="M11.857 3.143h-1.143V6.57h1.143V3.143zm-3.143 0H7.571V6.57h1.143V3.143z"/> </svg>`;
 

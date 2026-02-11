@@ -12,7 +12,7 @@ const io = new Server(server);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-const config = {
+let config = {
     tiktokUsername: '',
     twitchChannel: '',
     theme: 'default',
@@ -119,7 +119,12 @@ function manageDemoMode() {
 
 // API Endpoints
 app.get('/api/config', (req, res) => {
-    res.json(config);
+    try {
+        res.json(config);
+    } catch (err) {
+        console.error('Error in GET /api/config:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // Serve Dashboard
