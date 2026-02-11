@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overlay Dashboard</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        .preview {
+            margin-top: 30px;
+            border: 1px solid #ccc;
+            height: 400px;
+            position: relative;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/c/c8/Very_Black_Screen.jpg');
+            background-size: cover;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Overlay Configuration</h1>
+
+        <div class="form-group">
+            <label for="tiktok">TikTok Username</label>
+            <input type="text" id="tiktok" placeholder="e.g. ISleepWithoutSocks">
+        </div>
+
+        <div class="form-group">
+            <label for="twitch">Twitch Channel Name</label>
+            <input type="text" id="twitch" placeholder="e.g. OfficialBadLarry">
+        </div>
+
+        <div class="form-group">
+            <label for="theme">Chat Theme</label>
+            <select id="theme">
+                <option value="default">Default (Transparent)</option>
+                <option value="wizard">BadLarry (Wizard)</option>
+                <option value="nosockzone">NoSockZone (Windows XP)</option>
+                <option value="arson">ArsonNol (Campfire)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Chat Orientation</label>
+            <select id="chatAlign">
+                <option value="left">Left</option>
+                <option value="right">Right</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="fontSize">Font Size: <span id="fontSizeDisplay">16</span>px</label>
+            <input type="range" id="fontSize" min="10" max="40" step="1" value="16"
+                oninput="document.getElementById('fontSizeDisplay').innerText = this.value">
+        </div>
+
+        <div class="form-group">
+            <label for="chatFade">Message Fadeout (seconds, 0 = never)</label>
+            <input type="number" id="chatFade" min="0" value="0">
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button onclick="saveConfig()">Save & Apply</button>
+            <button onclick="popoutChat()" style="background-color: #6f42c1;">Popout Chat</button>
+        </div>
+
+        <div class="preview">
+            <iframe src="/" id="previewFrame"></iframe>
+        </div>
+    </div>
+
+    <script>
+        async function loadConfig() {
+            const res = await fetch('/api/config');
+            const config = await res.json();
+            document.getElementById('tiktok').value = config.tiktokUsername;
+            document.getElementById('twitch').value = config.twitchChannel;
+            document.getElementById('theme').value = config.theme;
+            document.getElementById('chatAlign').value = config.chatAlign || 'left';
+            document.getElementById('chatFade').value = config.chatFade || 0;
+            document.getElementById('fontSize').value = config.fontSize || 16;
+            document.getElementById('fontSizeDisplay').innerText = config.fontSize || 16;
+        }
+
+        async function saveConfig() {
+            const config = {
+                tiktokUsername: document.getElementById('tiktok').value,
+                twitchChannel: document.getElementById('twitch').value,
+                theme: document.getElementById('theme').value,
+                chatAlign: document.getElementById('chatAlign').value,
+                chatFade: parseInt(document.getElementById('chatFade').value) || 0,
+                fontSize: parseInt(document.getElementById('fontSize').value) || 16
+            };
+
+            await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+
+            alert('Configuration Saved!');
+            // Reload iframe to ensure it picks up new socket connection if needed (though socket handles live updates now)
+            // document.getElementById('previewFrame').src = '/'; 
+        }
+
+        function popoutChat() {
+            window.open('/', 'StreamChat', 'width=400,height=600,menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no');
+        }
+
+        loadConfig();
+    </script>
+</body>
+
+</html>
